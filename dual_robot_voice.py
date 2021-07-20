@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # Edited by Edgardo Peregrino on July 19, 2021
+# import libraries
 from time import sleep
 import aiy.voice.tts
 from gpiozero import OutputDevice, AngularServo, LED, PWMOutputDevice
@@ -21,8 +22,10 @@ import logging
 from flask import Flask, request, render_template, json
 from aiy.cloudspeech import CloudSpeechClient
 
+# Define app
 app = Flask(__name__)
 
+# Define factories
 factory = PiGPIOFactory(host='192.168.0.22')
 factory2 = PiGPIOFactory(host='192.168.0.23')
 
@@ -46,6 +49,7 @@ linus_eye = LED(16, pin_factory=factory)
 angular_servo = AngularServo(22, min_angle=-90, max_angle=90, pin_factory=factory)
 angular_servo2 = AngularServo(23, min_angle=-90, max_angle=90, pin_factory=factory)
 
+# Define functions
 def get_hints(language_code):
     if language_code.startswith('en_'):
         return ('go forward',
@@ -135,6 +139,7 @@ def stop_two():
     motor_in3.off()
     motor_in4.off()
 
+# Check the status on the app
 @app.route('/status')
 def healthcheck():
     response = app.response_class(
@@ -145,6 +150,7 @@ def healthcheck():
     app.logger.info('Status request successfull')
     return response
 
+# Check the metrics of the app
 @app.route('/metrics')
 def metrics():
     response = app.response_class(
@@ -161,11 +167,13 @@ def shutdown():
         raise RuntimeError('Not running with the Werkzeug server')
     func()
 
+# Gracefully shutdown app
 @app.route('/shutdown', methods=['GET'])
 def shutdown_server():
     shutdown()
     return 'Server shutting down'
 
+# Main index
 @app.route('/')
 def index():
     return render_template('dual_robot_voice.html')
@@ -241,6 +249,7 @@ def main():
             break
     return render_template('dual_robot_voice.html')
 
+# Servo control
 @app.route('/angle', methods=['POST'])
 def angle():
     slider1 = request.form["slider1"]
@@ -249,6 +258,7 @@ def angle():
     angular_servo2.angle = int(slider2)
     return render_template('dual_robot_voice.html')
 
+# PWM control
 @app.route('/pwm', methods=['POST'])
 def pwm():
     slider3 = request.form["slider3"]
